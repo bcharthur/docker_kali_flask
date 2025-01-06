@@ -7,7 +7,7 @@ from Controller.kali_controller import kali_bp
 
 def create_app():
     app = Flask(__name__)
-    app.secret_key = "SECRET_KEY"
+    app.secret_key = "VOTRE_CLE_SECRETE"  # Remplacez par une clé secrète sécurisée
 
     # Register Blueprints
     app.register_blueprint(home_bp, url_prefix='/')

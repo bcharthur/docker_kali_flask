@@ -18,7 +18,7 @@
           <span class="badge bg-danger">Non installé</span>
         {% endif %}
         {% if not docker_status.installed %}
-            <hr />
+          <hr />
           <!-- Bouton Installer Docker (affiché uniquement si NON installé) -->
           <form action="{{ url_for('docker_bp.install_docker') }}" method="POST">
             <button class="btn btn-primary btn-sm" type="submit">
@@ -44,7 +44,7 @@
           <span class="badge bg-danger">Non installé</span>
         {% endif %}
         {% if not choco_status.installed %}
-            <hr />
+          <hr />
           <form action="{{ url_for('choco_bp.install_chocolatey') }}" method="POST">
             <button class="btn btn-primary btn-sm" type="submit">
               Installer Chocolatey
@@ -55,37 +55,74 @@
     </div>
   </div>
 
-<!-- Kali Card -->
-<div class="col">
-  <div class="card text-center">
-    <div class="card-body">
-      <h5 class="card-title">
-        <i class="fa-solid fa-skull"></i> Kali
-      </h5>
-      {% if kali_status.image_exists %}
-        <span class="badge bg-success">Image OK</span>
-      {% else %}
-        <span class="badge bg-danger">Image Inexistante</span>
-      {% endif %}
-      <br/>
-      {% if kali_status.container_running %}
-        <span class="badge bg-success mt-2">Conteneur En Cours</span>
-      {% else %}
-        <span class="badge bg-danger mt-2">Conteneur Inactif</span>
-      {% endif %}
-      <hr />
-      <!-- Bouton Installer Kali : build + run + SSH -->
-      {% if not kali_status.image_exists or not kali_status.container_running %}
-      <form action="{{ url_for('kali_bp.install_kali') }}" method="POST">
-        <button class="btn btn-primary btn-sm" type="submit">
-          Installer Kali
-        </button>
-      </form>
-      {% endif %}
+  <!-- Kali Card -->
+  <div class="col">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5 class="card-title">
+          <i class="fa-solid fa-skull"></i> Kali
+        </h5>
+        {% if kali_status.image_exists %}
+          <span class="badge bg-success">Image OK</span>
+          <p class="mt-2"><strong>Nom de l'image :</strong> {{ kali_status.image_name }}</p>
+        {% else %}
+          <span class="badge bg-danger">Image Inexistante</span>
+        {% endif %}
+        <br/>
+        {% if kali_status.container_running %}
+          <span class="badge bg-success mt-2">Conteneur En Cours</span>
+          <p class="mt-2"><strong>Nom du conteneur :</strong> {{ kali_status.container_name }}</p>
+        {% else %}
+          <span class="badge bg-danger mt-2">Conteneur Inactif</span>
+          {% if kali_status.image_exists %}
+            <p class="mt-2"><strong>Nom du conteneur :</strong> {{ kali_status.container_name }}</p>
+          {% endif %}
+        {% endif %}
+        <hr />
+        <!-- Bouton Installer Kali : build + run + SSH -->
+        {% if not kali_status.image_exists or not kali_status.container_running %}
+          <form action="{{ url_for('kali_bp.install_kali') }}" method="POST">
+            <button class="btn btn-primary btn-sm" type="submit">
+              Installer Kali
+            </button>
+          </form>
+        {% endif %}
+
+        <!-- Bouton État Connexion -->
+        {% if kali_status.image_exists and kali_status.container_running %}
+          <hr />
+          <button class="btn btn-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#commandForm" aria-expanded="false" aria-controls="commandForm">
+            État Connexion
+          </button>
+
+          <!-- Formulaire de Commande SSH -->
+          <div class="collapse mt-3" id="commandForm">
+            <div class="card card-body">
+              <form action="{{ url_for('kali_bp.execute_kali_command') }}" method="POST">
+                <div class="mb-3">
+                  <label for="command" class="form-label">Commande SSH :</label>
+                  <input type="text" class="form-control" id="command" name="command" placeholder="Ex. nmap -sV 127.0.0.1">
+                </div>
+                <button type="submit" class="btn btn-success btn-sm">Exécuter</button>
+              </form>
+            </div>
+          </div>
+        {% endif %}
+      </div>
     </div>
   </div>
-</div>
-
 
 </div>
+
+<!-- Section Console Kali -->
+{% if kali_logs %}
+  <hr>
+  <div class="mt-4">
+    <h3>Console Kali</h3>
+    <pre style="border:1px solid #ccc; padding:10px; height:400px; overflow-y:auto; font-family:monospace;">
+{{ kali_logs | join('\n') }}
+    </pre>
+  </div>
+{% endif %}
+
 {% endblock %}
