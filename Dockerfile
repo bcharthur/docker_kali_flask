@@ -1,10 +1,17 @@
-# Dockerfile : Kali avec SSH, Outils, SecLists, nmap fonctionnel
+# --------------------------------
+#  Dockerfile : Kali avec SSH, Outils et SecLists
+# --------------------------------
 FROM kalilinux/kali-rolling
 
-ARG SSH_ROOT_PASSWORD=toor
+# Éviter les interactions apt
 ENV DEBIAN_FRONTEND=noninteractive
 
-# 1) Mise à jour + installation de paquets (dont libcap2-bin pour setcap)
+# Variables d'arguments
+ARG SSH_ROOT_PASSWORD=toor
+ARG SSH_USER=kaliuser
+ARG SSH_PASSWORD=kali
+
+# Mise à jour & installation d'outils
 RUN apt-get update && \
     apt-get install -y \
         kali-linux-default \
@@ -14,26 +21,31 @@ RUN apt-get update && \
         lsb-release \
         git \
         wget \
-        libcap2-bin && \
+        sudo && \
     rm -rf /var/lib/apt/lists/*
 
-# 2) Autoriser SSH (root)
+# Dossier run/sshd
 RUN mkdir -p /var/run/sshd
+
+# Mot de passe root
 RUN echo "root:${SSH_ROOT_PASSWORD}" | chpasswd
+
+# Création d'un user normal
+RUN useradd -ms /bin/bash --uid 1000 --gid 0 "${SSH_USER}" \
+    && usermod -aG sudo "${SSH_USER}" \
+    && echo "${SSH_USER}:${SSH_PASSWORD}" | chpasswd
+
+# Autoriser le root login en SSH
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+# Autoriser l’authentification par mot de passe
 RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
 
-# 3) Donner la capacité raw à nmap (pour éviter "Operation not permitted")
-# Selon la version de Kali, nmap peut être dans /usr/bin/nmap ou /usr/lib/nmap/nmap
-RUN setcap cap_net_raw+eip /usr/bin/nmap || true
-RUN setcap cap_net_raw+eip /usr/lib/nmap/nmap || true
-
-# 4) Installer SecLists
-RUN git clone https://github.com/danielmiessler/SecLists.git /usr/share/seclists
-RUN chmod -R 755 /usr/share/seclists
-
-# 5) Exposer le port 22
+# Expose port 22
 EXPOSE 22
 
-# 6) Lancer SSH en foreground
+# Installer SecLists
+RUN git clone https://github.com/danielmiessler/SecLists.git /usr/share/seclists && \
+    chmod -R 755 /usr/share/seclists
+
+# Lancer SSH en mode "foreground"
 CMD ["/usr/sbin/sshd", "-D"]

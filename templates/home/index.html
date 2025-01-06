@@ -13,17 +13,19 @@
         </h5>
         {% if docker_status.installed %}
           <span class="badge bg-success">Installé</span>
-          <p class="mt-2"><strong>Version:</strong> {{ docker_status.version }}</p>
+          <p class="mt-2"><strong>Version :</strong> {{ docker_status.version }}</p>
         {% else %}
           <span class="badge bg-danger">Non installé</span>
         {% endif %}
-        <hr />
-        <!-- Bouton Installer Docker -->
-        <form action="{{ url_for('docker_bp.install_docker') }}" method="POST">
-          <button class="btn btn-primary btn-sm" type="submit">
-            Installer Docker
-          </button>
-        </form>
+        {% if not docker_status.installed %}
+            <hr />
+          <!-- Bouton Installer Docker (affiché uniquement si NON installé) -->
+          <form action="{{ url_for('docker_bp.install_docker') }}" method="POST">
+            <button class="btn btn-primary btn-sm" type="submit">
+              Installer Docker
+            </button>
+          </form>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -37,48 +39,53 @@
         </h5>
         {% if choco_status.installed %}
           <span class="badge bg-success">Installé</span>
-          <p class="mt-2"><strong>Version:</strong> {{ choco_status.version }}</p>
+          <p class="mt-2"><strong>Version :</strong> {{ choco_status.version }}</p>
         {% else %}
           <span class="badge bg-danger">Non installé</span>
         {% endif %}
-        <hr />
-        <form action="{{ url_for('choco_bp.install_chocolatey') }}" method="POST">
-          <button class="btn btn-primary btn-sm" type="submit">
-            Installer Chocolatey
-          </button>
-        </form>
+        {% if not choco_status.installed %}
+            <hr />
+          <form action="{{ url_for('choco_bp.install_chocolatey') }}" method="POST">
+            <button class="btn btn-primary btn-sm" type="submit">
+              Installer Chocolatey
+            </button>
+          </form>
+        {% endif %}
       </div>
     </div>
   </div>
 
-  <!-- Kali Card -->
-  <div class="col">
-    <div class="card text-center">
-      <div class="card-body">
-        <h5 class="card-title">
-          <i class="fa-solid fa-skull"></i> Kali
-        </h5>
-        {% if kali_status.image_exists %}
-          <span class="badge bg-success">Image OK</span>
-        {% else %}
-          <span class="badge bg-danger">Image Inexistante</span>
-        {% endif %}
-        <br/>
-        {% if kali_status.container_running %}
-          <span class="badge bg-success mt-2">Conteneur En Cours</span>
-        {% else %}
-          <span class="badge bg-danger mt-2">Conteneur Inactif</span>
-        {% endif %}
-        <hr />
-        <!-- Installer => build + run -->
-        <form action="{{ url_for('kali_bp.install_kali') }}" method="POST">
-          <button class="btn btn-primary btn-sm" type="submit">
-            Installer Kali
-          </button>
-        </form>
-      </div>
+<!-- Kali Card -->
+<div class="col">
+  <div class="card text-center">
+    <div class="card-body">
+      <h5 class="card-title">
+        <i class="fa-solid fa-skull"></i> Kali
+      </h5>
+      {% if kali_status.image_exists %}
+        <span class="badge bg-success">Image OK</span>
+      {% else %}
+        <span class="badge bg-danger">Image Inexistante</span>
+      {% endif %}
+      <br/>
+      {% if kali_status.container_running %}
+        <span class="badge bg-success mt-2">Conteneur En Cours</span>
+      {% else %}
+        <span class="badge bg-danger mt-2">Conteneur Inactif</span>
+      {% endif %}
+      <hr />
+      <!-- Bouton Installer Kali : build + run + SSH -->
+      {% if not kali_status.image_exists or not kali_status.container_running %}
+      <form action="{{ url_for('kali_bp.install_kali') }}" method="POST">
+        <button class="btn btn-primary btn-sm" type="submit">
+          Installer Kali
+        </button>
+      </form>
+      {% endif %}
     </div>
   </div>
+</div>
+
 
 </div>
 {% endblock %}
