@@ -1,0 +1,25 @@
+<div class="modal fade" id="consoleModal" tabindex="-1" aria-labelledby="consoleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="consoleModalLabel">Console Docker/Kali</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Exemple : un formulaire pour exécuter une commande -->
+        <form action="{{ url_for('docker_bp.execute_command') }}" method="POST">
+          <div class="mb-3">
+            <label for="commandInput" class="form-label">Commande à exécuter :</label>
+            <input type="text" class="form-control" id="commandInput" name="command" />
+          </div>
+          <button type="submit" class="btn btn-success">Exécuter</button>
+        </form>
+
+        <!-- Zone d'affichage du résultat si vous le récupérez via un autre template ou redirection -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>

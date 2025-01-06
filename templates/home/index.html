@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Accueil - Docker & Kali Manager</h1>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+  <!-- Docker card -->
+<div class="col">
+  <div class="card text-center">
+    <div class="card-body">
+      <h5 class="card-title"><i class="fa-brands fa-docker"></i> Docker</h5>
+      {% if docker_status.installed %}
+        <span class="badge bg-success">Installé</span>
+        {% if docker_status.running %}
+          <span class="badge bg-success">Démarré</span>
+        {% else %}
+          <span class="badge bg-danger">Arrêté</span>
+        {% endif %}
+      {% else %}
+        <span class="badge bg-danger">Non installé</span>
+      {% endif %}
+
+      <hr>
+
+      <!-- Boutons -->
+      <form action="{{ url_for('docker_bp.install_docker') }}" method="POST" style="display:inline;">
+        <button class="btn btn-primary btn-sm" type="submit">Installer</button>
+      </form>
+      <form action="{{ url_for('docker_bp.uninstall_docker') }}" method="POST" style="display:inline;">
+        <button class="btn btn-danger btn-sm" type="submit">Désinstaller</button>
+      </form>
+      <form action="{{ url_for('docker_bp.start_docker') }}" method="POST" style="display:inline;">
+        <button class="btn btn-success btn-sm" type="submit">Démarrer</button>
+      </form>
+      <form action="{{ url_for('docker_bp.stop_docker') }}" method="POST" style="display:inline;">
+        <button class="btn btn-warning btn-sm" type="submit">Arrêter</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+  <!-- Chocolatey card -->
+  <div class="col">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5 class="card-title"><i class="fa-solid fa-cube"></i> Chocolatey</h5>
+        {% if choco_status.installed %}
+          <span class="badge bg-success">Installé</span>
+          <p class="mt-2">Version : {{ choco_status.version }}</p>
+        {% else %}
+          <span class="badge bg-danger">Non installé</span>
+        {% endif %}
+        <div class="mt-3">
+          <form action="{{ url_for('choco_bp.install_choco') }}" method="POST" class="d-inline">
+            <button type="submit" class="btn btn-primary btn-sm">Installer</button>
+          </form>
+          <form action="{{ url_for('choco_bp.uninstall_choco') }}" method="POST" class="d-inline">
+            <button type="submit" class="btn btn-danger btn-sm">Désinstaller</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kali card -->
+  <div class="col">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5 class="card-title"><i class="fa-solid fa-skull"></i> Kali</h5>
+        {% if kali_status.image_exists %}
+          <span class="badge bg-success">Image OK</span>
+        {% else %}
+          <span class="badge bg-danger">Image Absente</span>
+        {% endif %}
+        <br/>
+        {% if kali_status.container_running %}
+          <span class="badge bg-success mt-1">Conteneur Running</span>
+        {% else %}
+          <span class="badge bg-danger mt-1">Conteneur Stopped</span>
+        {% endif %}
+        <div class="mt-3">
+          <form action="{{ url_for('kali_bp.install_kali') }}" method="POST" class="d-inline">
+            <button type="submit" class="btn btn-primary btn-sm">Installer</button>
+          </form>
+          <form action="{{ url_for('kali_bp.uninstall_kali') }}" method="POST" class="d-inline">
+            <button type="submit" class="btn btn-danger btn-sm">Désinstaller</button>
+          </form>
+        </div>
+        <div class="mt-2">
+          <form action="{{ url_for('kali_bp.start_kali') }}" method="POST" class="d-inline">
+            <button type="submit" class="btn btn-success btn-sm">Start</button>
+          </form>
+          <form action="{{ url_for('kali_bp.stop_kali') }}" method="POST" class="d-inline">
+            <button type="submit" class="btn btn-warning btn-sm">Stop</button>
+          </form>
+        </div>
+        <hr>
+        <!-- SSH actions -->
+        <form action="{{ url_for('ssh_bp.connect_ssh') }}" method="POST" class="d-inline">
+          <button type="submit" class="btn btn-info btn-sm">Connect SSH</button>
+        </form>
+        <form action="{{ url_for('ssh_bp.disconnect_ssh') }}" method="POST" class="d-inline">
+          <button type="submit" class="btn btn-secondary btn-sm">Disconnect SSH</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- SSH card (optionnel) -->
+  <div class="col">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5 class="card-title"><i class="fa-solid fa-terminal"></i> SSH</h5>
+        {% if ssh_status.connected %}
+          <span class="badge bg-success">Connecté</span>
+        {% else %}
+          <span class="badge bg-danger">Non connecté</span>
+        {% endif %}
+        <div class="mt-3">
+          <form action="{{ url_for('ssh_bp.connect_ssh') }}" method="POST" class="d-inline">
+            <button type="submit" class="btn btn-info btn-sm">Connecter</button>
+          </form>
+          <form action="{{ url_for('ssh_bp.disconnect_ssh') }}" method="POST" class="d-inline">
+            <button type="submit" class="btn btn-secondary btn-sm">Déconnecter</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- Cadre console -->
+<div class="mt-4">
+  <h3>Console Kali</h3>
+  <pre style="border:1px solid #ccc; padding:10px; height:400px; overflow-y:auto; font-family:monospace;">
+{% if console_logs %}
+{{ console_logs | join('\n\n') }}
+{% else %}
+Aucune commande exécutée pour le moment.
+{% endif %}
+  </pre>
+
+  <!-- Formulaire commande -->
+  <form action="{{ url_for('console_bp.console_execute') }}" method="POST" class="row g-3 align-items-center mt-2">
+    <div class="col-12 col-sm-9">
+      <input type="text" name="command" class="form-control" placeholder="Entrez une commande..." />
+    </div>
+    <div class="col-12 col-sm-3">
+      <button type="submit" class="btn btn-primary w-100">Exécuter</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
