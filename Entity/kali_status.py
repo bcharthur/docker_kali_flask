@@ -5,4 +5,5 @@ class KaliStatus:
         self.container_running = container_running
 
     def __repr__(self):
-        return f"KaliStatus(image_exists={self.image_exists}, container_running={self.container_running})"
+        return (f"KaliStatus(image_exists={self.image_exists}, "
+                f"container_running={self.container_running})")
