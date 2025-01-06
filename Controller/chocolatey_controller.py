@@ -9,8 +9,3 @@ choco_service = ChocolateyService()
 def install_chocolatey():
     choco_service.install_chocolatey()
     return redirect(url_for('home_bp.index'))
-
-@choco_bp.route('/choco/uninstall', methods=['POST'])
-def uninstall_chocolatey():
-    choco_service.uninstall_chocolatey()
-    return redirect(url_for('home_bp.index'))

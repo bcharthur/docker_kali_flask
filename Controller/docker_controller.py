@@ -9,18 +9,3 @@ docker_service = DockerService()
 def install_docker():
     docker_service.install_docker()
     return redirect(url_for('home_bp.index'))
-
-@docker_bp.route('/docker/uninstall', methods=['POST'])
-def uninstall_docker():
-    docker_service.uninstall_docker()
-    return redirect(url_for('home_bp.index'))
-
-@docker_bp.route('/docker/start', methods=['POST'])
-def start_docker():
-    docker_service.start_docker()
-    return redirect(url_for('home_bp.index'))
-
-@docker_bp.route('/docker/stop', methods=['POST'])
-def stop_docker():
-    docker_service.stop_docker()
-    return redirect(url_for('home_bp.index'))

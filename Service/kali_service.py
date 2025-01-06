@@ -9,64 +9,48 @@ class KaliService:
         self.logs = []
 
     def check_kali(self) -> KaliStatus:
+        """Vérifie si l'image my_kali_image existe et si le conteneur my_kali_container tourne."""
         status = KaliStatus()
 
-        # 1) Vérifier si l'image my_kali_image existe
+        # Vérifier l'image
         if self._image_exists("my_kali_image"):
             status.image_exists = True
 
-        # 2) Vérifier si conteneur my_kali_container est running
+        # Vérifier si conteneur 'my_kali_container' est running
         info = self._get_container_info("my_kali_container")
-        if info:
-            if info["State"].lower() == "running":
-                status.container_running = True
+        if info and info["State"].lower() == "running":
+            status.container_running = True
 
         return status
 
-    def build_kali_image(self):
-        self.add_log("Construction de l'image Kali (docker build -t my_kali_image .)")
-        try:
-            cmd = "docker build -t my_kali_image ."
-            subprocess.run(shlex.split(cmd), check=True, capture_output=True, text=True)
-        except subprocess.CalledProcessError as e:
-            self.add_log(f"Erreur: {e.stderr}")
-
-    def run_kali_container(self):
-        self.add_log("Démarrage du conteneur Kali (docker run...)")
-        try:
-            cmd = "docker run -d --name my_kali_container -p 2222:22 my_kali_image"
-            r = subprocess.run(shlex.split(cmd), check=True, capture_output=True, text=True)
-            self.add_log(r.stdout.strip())
-        except subprocess.CalledProcessError as e:
-            self.add_log(f"Erreur: {e.stderr}")
-
-    def stop_kali_container(self):
-        self.add_log("Arrêt du conteneur Kali (docker stop my_kali_container)")
-        try:
-            subprocess.run(["docker", "stop", "my_kali_container"], check=True, capture_output=True, text=True)
-        except subprocess.CalledProcessError as e:
-            self.add_log(f"Erreur: {e.stderr}")
-
-    def uninstall_kali(self):
+    def install_kali(self):
         """
-        Stop + rm conteneur, rmi image
+        Exécute docker build + docker run
         """
-        self.add_log("Désinstallation de Kali (stop + rm + rmi)")
-        try:
-            subprocess.run(["docker", "stop", "my_kali_container"], check=False, capture_output=True, text=True)
-            subprocess.run(["docker", "rm", "my_kali_container"], check=False, capture_output=True, text=True)
-            subprocess.run(["docker", "rmi", "my_kali_image"], check=False, capture_output=True, text=True)
-        except subprocess.CalledProcessError as e:
-            self.add_log(f"Erreur: {e.stderr}")
+        self.logs.append("Installation de Kali : docker build + run")
 
-    # ---------------------
-    # MÉTHODES INTERNES
-    # ---------------------
-    def _image_exists(self, image_name):
+        # Docker build
         try:
-            cmd = f"docker images --format '{{{{.Repository}}}}'"
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-            if image_name in result.stdout.splitlines():
+            cmd_build = "docker build -t my_kali_image ."
+            build_result = subprocess.run(shlex.split(cmd_build), capture_output=True, text=True, check=True)
+            self.logs.append(build_result.stdout)
+        except subprocess.CalledProcessError as e:
+            self.logs.append(f"Erreur build: {e.stderr}")
+
+        # Docker run
+        try:
+            cmd_run = "docker run -d --name my_kali_container -p 2222:22 my_kali_image"
+            run_result = subprocess.run(shlex.split(cmd_run), capture_output=True, text=True, check=True)
+            self.logs.append(run_result.stdout)
+        except subprocess.CalledProcessError as e:
+            self.logs.append(f"Erreur run: {e.stderr}")
+
+    # --------------- Internes ---------------
+    def _image_exists(self, image_name) -> bool:
+        try:
+            cmd = "docker images --format '{{.Repository}}'"
+            r = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            if image_name in r.stdout.split():
                 return True
         except:
             pass
@@ -75,7 +59,7 @@ class KaliService:
     def _get_container_info(self, container_name):
         try:
             cmd = "docker ps -a --format '{{json .}}'"
-            r = subprocess.run(shlex.split(cmd), check=True, capture_output=True, text=True)
+            r = subprocess.run(shlex.split(cmd), capture_output=True, text=True, check=True)
             for line in r.stdout.strip().split('\n'):
                 data = json.loads(line)
                 if data["Names"] == container_name:
@@ -83,10 +67,6 @@ class KaliService:
         except:
             pass
         return None
-
-    def add_log(self, msg):
-        print(msg)
-        self.logs.append(msg)
 
     def get_logs(self):
         return self.logs
