@@ -1,8 +1,9 @@
+<!-- templates/home/index.html -->
 {% extends "base.html" %}
 {% block content %}
 <h1>Accueil - Docker & Kali Manager</h1>
 
-<div class="row row-cols-1 row-cols-md-3 g-4">
+<div class="row row-cols-1 row-cols-md-4 g-4">
 
   <!-- Docker Card -->
   <div class="col">
@@ -18,7 +19,7 @@
           <span class="badge bg-danger">Non installé</span>
         {% endif %}
         {% if not docker_status.installed %}
-            <hr />
+          <hr />
           <!-- Bouton Installer Docker (affiché uniquement si NON installé) -->
           <form action="{{ url_for('docker_bp.install_docker') }}" method="POST">
             <button class="btn btn-primary btn-sm" type="submit">
@@ -44,7 +45,7 @@
           <span class="badge bg-danger">Non installé</span>
         {% endif %}
         {% if not choco_status.installed %}
-            <hr />
+          <hr />
           <form action="{{ url_for('choco_bp.install_chocolatey') }}" method="POST">
             <button class="btn btn-primary btn-sm" type="submit">
               Installer Chocolatey
@@ -55,37 +56,98 @@
     </div>
   </div>
 
-<!-- Kali Card -->
-<div class="col">
-  <div class="card text-center">
-    <div class="card-body">
-      <h5 class="card-title">
-        <i class="fa-solid fa-skull"></i> Kali
-      </h5>
-      {% if kali_status.image_exists %}
-        <span class="badge bg-success">Image OK</span>
-      {% else %}
-        <span class="badge bg-danger">Image Inexistante</span>
-      {% endif %}
-      <br/>
-      {% if kali_status.container_running %}
-        <span class="badge bg-success mt-2">Conteneur En Cours</span>
-      {% else %}
-        <span class="badge bg-danger mt-2">Conteneur Inactif</span>
-      {% endif %}
-      <hr />
-      <!-- Bouton Installer Kali : build + run + SSH -->
-      {% if not kali_status.image_exists or not kali_status.container_running %}
-      <form action="{{ url_for('kali_bp.install_kali') }}" method="POST">
-        <button class="btn btn-primary btn-sm" type="submit">
-          Installer Kali
-        </button>
-      </form>
-      {% endif %}
+  <!-- Kali Card -->
+  <div class="col">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5 class="card-title">
+          <i class="fa-solid fa-skull"></i> Kali
+        </h5>
+        {% if kali_status.image_exists %}
+          <span class="badge bg-success">Image OK</span>
+          <p class="mt-2"><strong>Nom de l'image :</strong> {{ kali_status.image_name }}</p>
+        {% else %}
+          <span class="badge bg-danger">Image Inexistante</span>
+        {% endif %}
+        <br/>
+        {% if kali_status.container_running %}
+          <span class="badge bg-success mt-2">Connecté</span>
+          <p class="mt-2"><strong>Nom du conteneur :</strong> {{ kali_status.container_name }}</p>
+        {% else %}
+          <span class="badge bg-danger mt-2">Déconnecté</span>
+          {% if kali_status.image_exists %}
+            <p class="mt-2"><strong>Nom du conteneur :</strong> {{ kali_status.container_name }}</p>
+          {% endif %}
+        {% endif %}
+        <hr />
+        <!-- Bouton Installer Kali : build + run + SSH -->
+        {% if not kali_status.image_exists or not kali_status.container_running %}
+          <form action="{{ url_for('kali_bp.install_kali') }}" method="POST">
+            <button class="btn btn-primary btn-sm" type="submit">
+              Installer Kali
+            </button>
+          </form>
+        {% endif %}
+      </div>
     </div>
   </div>
+
+  <!-- Terminal Card -->
+  <div class="col">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5 class="card-title">
+          <i class="fa-solid fa-terminal"></i> Terminal
+        </h5>
+        {% if kali_status.container_running %}
+          <form action="{{ url_for('kali_bp.execute_kali_command') }}" method="POST">
+            <div class="input-group">
+              <input type="text" name="command" class="form-control" placeholder="Entrez une commande..." required />
+              <button class="btn btn-success" type="submit">Exécuter</button>
+            </div>
+          </form>
+        {% else %}
+          <span class="badge bg-danger">Déconnecté</span>
+          <p class="mt-2">Connectez-vous à Kali pour utiliser le terminal.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
 </div>
 
+<!-- Section Console Docker -->
+{% if docker_logs %}
+  <hr>
+  <div class="mt-4">
+    <h3>Console Docker</h3>
 
-</div>
+    <!-- Cadre scrollable -->
+    <pre style="border:1px solid #ccc; padding:10px; height:400px; overflow-y:auto; font-family:monospace;">
+{% if docker_logs %}
+{{ docker_logs | join('\n') }}
+{% else %}
+Aucune action effectuée pour le moment.
+{% endif %}
+    </pre>
+  </div>
+{% endif %}
+
+<!-- Section Console Kali -->
+{% if kali_logs %}
+  <hr>
+  <div class="mt-4">
+    <h3>Console Kali</h3>
+
+    <!-- Cadre scrollable -->
+    <pre style="border:1px solid #ccc; padding:10px; height:400px; overflow-y:auto; font-family:monospace;">
+{% if kali_logs %}
+{{ kali_logs | join('\n') }}
+{% else %}
+Aucune commande exécutée pour le moment.
+{% endif %}
+    </pre>
+  </div>
+{% endif %}
+
 {% endblock %}

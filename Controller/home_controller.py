@@ -15,9 +15,13 @@ def index():
     docker_status = docker_service.check_docker()
     choco_status = choco_service.check_chocolatey()
     kali_status = kali_service.check_kali()
+    docker_logs = docker_service.get_logs() if not docker_status.installed else []
+    kali_logs = kali_service.get_logs() if kali_status.container_running else []
     return render_template(
         'home/index.html',
         docker_status=docker_status,
         choco_status=choco_status,
-        kali_status=kali_status
+        kali_status=kali_status,
+        docker_logs=docker_logs,
+        kali_logs=kali_logs
     )
